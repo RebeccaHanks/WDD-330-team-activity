@@ -220,3 +220,38 @@ footer {
   font-size: var(--small-font);
   padding: 1em;
 }
+
+
+/* Category card styles gor grid added 2.12.2026 - ZS */
+/* Container for grid */
+
+.product-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  list-style-type: none;
+  padding: 0;
+}
+
+.category-card {
+  flex: 1 1 150px; /* Allows boxes to grow/shrink on small screens */
+  margin: 10px;
+  text-align: center;
+}
+
+.category-card img {
+  width: 100%;
+  height: auto;
+}
+
+.category-card a {
+  text-decoration: none;
+  color: black;
+}
+
+/* Mission text styling */
+.mission {
+  margin: 0 auto;
+  padding: 20px;
+  max-width: 600px;
+}
