@@ -233,6 +233,29 @@ footer {
   padding: 0;
 }
 
+.product-grid > li {
+  width: 150px;
+  padding: 0.5em;
+  margin: 1em;
+}
+
+.product-grid h2 {
+  margin: 0;
+}
+
+.product-grid a {
+  text-decoration: none;
+}
+.product-grid a:link,
+.product-grid a:visited {
+  color: var(--dark-grey);
+}
+.product-grid a:hover {
+  text-decoration: underline;
+}
+
+
+
 .category-card {
   flex: 1 1 150px; /* Allows boxes to grow/shrink on small screens */
   margin: 10px;
