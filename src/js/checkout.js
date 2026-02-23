@@ -1,6 +1,7 @@
 import { loadHeaderFooter } from "./utils.mjs";
 import checkoutProcess from "./checkoutProcess.mjs";
 
+
 loadHeaderFooter();
 
 checkoutProcess.init("so-cart", ".checkout-summary");
@@ -20,8 +21,12 @@ document.forms["checkout"].addEventListener("submit", (e) => {
 });
 
 // listening for click on the button
-// document.querySelector("#checkoutSubmit").addEventListener("click", (e) => {
-//   e.preventDefault();
-
-//   checkoutProcess.checkout(document.forms['checkout']);
-// });
+document.querySelector("#checkoutSubmit")
+.addEventListener("click", (e) => {
+  e.preventDefault();
+    var myForm = document.forms[0];
+    var chk_status = myForm.checkValidity();
+    myForm.reportValidity();
+    if(chk_status)
+  checkoutProcess.checkout(document.forms['checkout']);
+});
