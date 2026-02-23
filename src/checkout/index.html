@@ -18,7 +18,70 @@
       <section class="products">
         <h2>Review & Place your Order</h2>
       </section>
+      
+  <form action="/checkout" method="POST">
+
+  <fieldset>
+    <legend>Shipping</legend>
+
+    <label for="firstName">First Name</label><br>
+    <input type="text" id="firstName" name="firstName" required><br><br>
+
+    <label for="lastName">Last Name</label><br>
+    <input type="text" id="lastName" name="lastName" required><br><br>
+
+    <label for="street">Street</label><br>
+    <input type="text" id="street" name="street" required><br><br>
+
+    <label for="city">City</label><br>
+    <input type="text" id="city" name="city" required><br><br>
+
+    <label for="state">State</label><br>
+    <input type="text" id="state" name="state" required><br><br>
+
+    <label for="zip">Zip</label><br>
+    <input type="text" id="zip" name="zip" required><br><br>
+
+  </fieldset>
+
+  <fieldset>
+    <legend>Payment</legend>
+
+    <label for="cardNumber">Card Number</label><br>
+    <input type="text" id="cardNumber" name="cardNumber" required><br><br>
+
+    <label for="expiration">Expiration</label><br>
+    <input type="text" id="expiration" name="expiration" required><br><br>
+
+    <label for="securityCode">Security Code</label><br>
+    <input type="text" id="securityCode" name="securityCode" required><br><br>
+
+  </fieldset>
+
+  <fieldset>
+    <legend>Order Summary</legend>
+
+    <p>Item Subtotal (2): $269.98</p>
+    <p>Shipping Estimate: $10.00</p>
+    <p>Tax: $21.60</p>
+    <p><strong>Order Total: $301.58</strong></p>
+
+    <!-- Hidden inputs to send totals to server -->
+    <input type="hidden" name="subtotal" value="269.98">
+    <input type="hidden" name="shipping" value="10.00">
+    <input type="hidden" name="tax" value="21.60">
+    <input type="hidden" name="total" value="301.58">
+
+  </fieldset>
+
+  <button type="submit">Checkout</button>
+
+</form>
     </main>
+
+
+
+
 
   <footer id="main-footer"></footer>  </body>
 </html>
