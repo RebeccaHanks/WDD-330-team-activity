@@ -1,8 +1,16 @@
 import { getLocalStorage, renderListWithTemplate } from "./utils.mjs";
 
 export default function shoppingCart() {
-  const cartItems = getLocalStorage("so-cart");
+  const cartItems = getLocalStorage("so-cart") || [];
   const outputEl = document.querySelector(".product-list");
+
+  // If cart is empty, show a message instead of the list.
+  if (cartItems.length === 0) {
+    outputEl.innerHTML = "<p class='empty-cart'>Your cart is empty.</p>";
+    displayCartTotal(0);
+    return;
+  }
+  
   renderListWithTemplate(cartItemTemplate, outputEl, cartItems);
   const total = calculateListTotal(cartItems);
   displayCartTotal(total);
