@@ -7,80 +7,146 @@ export function qs(selector, parent = document) {
 
 // retrieve data from localstorage
 export function getLocalStorage(key) {
-  return JSON.parse(localStorage.getItem(key));
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error("getLocalStorage parse error for key:", key, e);
+    return null;
+  }
 }
-// save data to local storage
-export function setLocalStorage(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-// set a listener for both touchend and click
-export function setClick(selector, callback) {
-  qs(selector).addEventListener("touchend", (event) => {
-    event.preventDefault();
-    callback();
-  });
-  qs(selector).addEventListener("click", callback);
-}
-// get URL parameter value
 
+// save data to local storage (defensive)
+export function setLocalStorage(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    console.error("setLocalStorage error for key:", key, e);
+  }
+}
+
+// set a listener for both touchend and click (defensive)
+export function setClick(selector, callback) {
+  const el = qs(selector);
+  if (!el) {
+    console.warn("setClick: element not found for selector:", selector);
+    return;
+  }
+
+  el.addEventListener("touchend", (event) => {
+    event.preventDefault();
+    callback(event);
+  });
+
+  el.addEventListener("click", callback);
+}
+
+// get URL parameter value
 export function getParam(param) {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   return urlParams.get(param);
 }
 
-
+// Render a list (array) using a template function into a parent element
 export function renderListWithTemplate(
   templateFn,
   parentElement,
-  list,
+  list = [],
   position = "afterbegin",
   clear = true
 ) {
+  if (!parentElement) {
+    console.error("renderListWithTemplate: parentElement is null");
+    return;
+  }
+
+  if (!Array.isArray(list)) {
+    list = [];
+  }
+
   if (clear) {
     parentElement.innerHTML = "";
   }
+
   const htmlString = list.map(templateFn);
   parentElement.insertAdjacentHTML(position, htmlString.join(""));
 }
 
+// Render an array of data with a template function
 export async function renderWithTemplate(
   templateFn,
   parentElement,
-  data,
+  data = [],
   position = "afterbegin",
-  clear = true
+  clear = true,
+  callback = null
 ) {
+  if (!parentElement) {
+    console.error("renderWithTemplate: parentElement is null");
+    return;
+  }
+
+  if (!Array.isArray(data)) {
+    data = [];
+  }
   if (clear) {
     parentElement.innerHTML = "";
   }
+
   const htmlString = data.map(templateFn);
   parentElement.insertAdjacentHTML(position, htmlString.join(""));
-  
-  if(callback) {
-        callback(data);
+
+  if (typeof callback === "function") {
+    callback(data);
   }
 }
 
+// loadTemplate returns an async function that fetches the HTML string when called
 function loadTemplate(path) {
   return async function () {
-    const res = await fetch(path);
-  if (res.ok) {
-      const html = await res.text();
-      return html;
+    try {
+      const res = await fetch(path);
+      if (res.ok) {
+        const html = await res.text();
+        return html;
+      } else {
+        console.error("loadTemplate: failed to fetch", path, res.status);
+        return "";
+      }
+    } catch (e) {
+      console.error("loadTemplate fetch error for", path, e);
+      return "";
     }
   };
 }
 
+// Load header and footer HTML and insert them into the page.
 export async function loadHeaderFooter() {
-  // header template will still be a function! But one where we have pre-supplied the argument.
-  // headerTemplate and footerTemplate will be almost identical, but they will remember the path we passed in when we created them
-  // why is it important that they stay functions?  The renderWithTemplate function is expecting a template function...if we sent it a string it would break, if we changed it to expect a string then it would become less flexible.
   const headerTemplateFn = loadTemplate("/partials/header.html");
   const footerTemplateFn = loadTemplate("/partials/footer.html");
   const headerEl = document.querySelector("#main-header");
   const footerEl = document.querySelector("#main-footer");
-  renderWithTemplate(headerTemplateFn, headerEl);
-  renderWithTemplate(footerTemplateFn, footerEl);
-}
 
+  if (headerEl) {
+    try {
+      const headerHtml = await headerTemplateFn();
+      headerEl.innerHTML = headerHtml;
+    } catch (e) {
+      console.error("Error loading header template:", e);
+    }
+  } else {
+    console.warn("loadHeaderFooter: #main-header not found");
+  }
+
+  if (footerEl) {
+    try {
+      const footerHtml = await footerTemplateFn();
+      footerEl.innerHTML = footerHtml;
+    } catch (e) {
+      console.error("Error loading footer template:", e);
+    }
+  } else {
+    console.warn("loadHeaderFooter: #main-footer not found");
+  }
+}

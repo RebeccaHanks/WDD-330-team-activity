@@ -4,33 +4,84 @@ import { setLocalStorage, getLocalStorage } from "./utils.mjs";
 let product = {};
 
 export default async function productDetails(productId) {
-  // get the details for the current product. findProductById will return a promise! use await or .then() to process it
-  product = await findProductById(productId);
-  // once we have the product details we can render out the HTML
-  renderProductDetails();
-  // once the HTML is rendered we can add a listener to Add to Cart button
-  document.getElementById("addToCart").addEventListener("click", addToCart);
-}
-function addToCart() {
-  let cartContents = getLocalStorage("so-cart");
-  //check to see if there was anything there
-  if (!cartContents) {
-    cartContents = [];
+  if (!productId) {
+    console.error("No product ID provided to productDetails");
+    return;
   }
-  // then add the current product to the list
-  cartContents.push(product);
-  setLocalStorage("so-cart", cartContents);
+
+  try {
+    product = await findProductById(productId);
+  } catch (error) {
+    console.error("Error fetching product details:", error);
+    return;
+  }
+
+  renderProductDetails();
+
+// Use a single, consistent id. Update HTML to match this id if needed.
+  const btn = document.getElementById("addToCartBtn");
+  if (!btn) {
+    console.error("Add to Cart button not found (expected id='addToCartBtn')");
+    return;
+  }
+  btn.addEventListener("click", addToCart);
 }
+
+
+
+
+function addToCart() {
+  const cartContents = getLocalStorage("so-cart") || [];
+
+  const normalized = normalizeProductForCart(product);
+
+  cartContents.push(normalized);
+  setLocalStorage("so-cart", cartContents);
+
+  animateCartIcon();
+  console.log("Product added to cart:", normalized);
+}
+
+function normalizeProductForCart(p) {
+  return {
+    Id: p.Id ?? "",
+    Name: p.Name ?? p.NameWithoutBrand ?? "Unknown",
+    FinalPrice: Number(p.FinalPrice ?? p.Price ?? 0),
+    Images: p.Images ?? (p.Image ? { PrimaryMedium: p.Image.PrimaryLarge } : {}),
+    Colors: p.Colors ?? (p.ColorsList ? p.ColorsList : []),
+    DescriptionHtmlSimple: p.DescriptionHtmlSimple ?? "",
+  };
+}
+
+function animateCartIcon() {
+  const icon = document.querySelector("#cart-icon");
+  if (!icon) return;
+  icon.classList.add("animate");
+  icon.addEventListener(
+    "animationend",
+    () => icon.classList.remove("animate"),
+    { once: true }
+  );
+}
+
 function renderProductDetails() {
-  document.querySelector("#productName").innerText = product.Brand.Name;
-  document.querySelector("#productNameWithoutBrand").innerText =
-    product.NameWithoutBrand;
-  document.querySelector("#productImage").src = product.Image.PrimaryLarge;
-  document.querySelector("#productImage").alt = product.Name;
-  document.querySelector("#productFinalPrice").innerText = product.FinalPrice;
-  document.querySelector("#productColorName").innerText =
-    product.Colors[0].ColorName;
-  document.querySelector("#productDescriptionHtmlSimple").innerHTML =
-    product.DescriptionHtmlSimple;
-  document.querySelector("#addToCart").dataset.id = product.Id;
+  const brandName = product.Brand?.Name ?? "";
+  const nameWithoutBrand = product.NameWithoutBrand ?? product.Name ?? "";
+  const imageSrc = product.Image?.PrimaryLarge ?? product.Images?.PrimaryMedium ?? "";
+  const altText = product.Name ?? "";
+  const price = product.FinalPrice ?? product.Price ?? 0;
+  const colorName = product.Colors?.[0]?.ColorName ?? "";
+
+  const el = (selector) => document.querySelector(selector);
+
+  if (el("#productName")) el("#productName").innerText = brandName;
+  if (el("#productNameWithoutBrand")) el("#productNameWithoutBrand").innerText = nameWithoutBrand;
+  if (el("#productImage")) {
+    el("#productImage").src = imageSrc;
+    el("#productImage").alt = altText;
+  }
+  if (el("#productFinalPrice")) el("#productFinalPrice").innerText = `$${Number(price).toFixed(2)}`;
+  if (el("#productColorName")) el("#productColorName").innerText = colorName;
+  if (el("#productDescriptionHtmlSimple")) el("#productDescriptionHtmlSimple").innerHTML = product.DescriptionHtmlSimple ?? "";
+  if (el("#addToCartBtn")) el("#addToCartBtn").dataset.id = product.Id ?? "";
 }

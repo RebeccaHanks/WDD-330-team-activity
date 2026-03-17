@@ -103,6 +103,16 @@ button {
   text-align: center;
 }
 
+.cart-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  padding: 6px, 2px;
+  color: white;
+  font-size: 12px;
+  border-raidus: 50%;
+  background: red;
+}
 .cart svg {
   width: 25px;
 }
@@ -154,6 +164,18 @@ button {
 .card__name {
   font-size: 1em;
 }
+
+/* Cross out original price in red and display discount in blue */
+.product-card__original-price {
+  text-decoration: line-through;
+  color: #f00;
+}
+
+.product-card__discount-price {
+  color: rgb(0, 0, 255);
+  font-weight: bold;
+  margin-left: 5px;
+}
 /* End product list card */
 
 .product-detail {
@@ -173,6 +195,7 @@ button {
   font-size: var(--small-font);
   /* max-height: 120px; */
   align-items: center;
+  width: 100%;
 }
 
 .cart-card__image {
@@ -202,6 +225,17 @@ button {
   grid-column: 3;
 }
 
+.cart-card__subtotal {
+  grid-row: 1;
+  grid-column: 1 / span 2;
+  justify-self: center;
+}
+.cart-card__remove {
+  grid-row: 1;
+  grid-column: 4;
+  margin-right: 0;
+}
+
 @media screen and (min-width: 500px) {
   body {
     max-width: 1080px;
@@ -216,65 +250,11 @@ button {
   }
 }
 
+.hide {
+  display: none;
+}
+
 footer {
   font-size: var(--small-font);
   padding: 1em;
-}
-
-
-/* Category card styles gor grid added 2.12.2026 - ZS */
-/* Container for grid */
-
-.product-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  list-style-type: none;
-  padding: 0;
-}
-
-.product-grid > li {
-  width: 150px;
-  padding: 0.5em;
-  margin: 1em;
-}
-
-.product-grid h2 {
-  margin: 0;
-}
-
-.product-grid a {
-  text-decoration: none;
-}
-.product-grid a:link,
-.product-grid a:visited {
-  color: var(--dark-grey);
-}
-.product-grid a:hover {
-  text-decoration: underline;
-}
-
-
-
-.category-card {
-  flex: 1 1 150px; /* Allows boxes to grow/shrink on small screens */
-  margin: 10px;
-  text-align: center;
-}
-
-.category-card img {
-  width: 100%;
-  height: auto;
-}
-
-.category-card a {
-  text-decoration: none;
-  color: black;
-}
-
-/* Mission text styling */
-.mission {
-  margin: 0 auto;
-  padding: 20px;
-  max-width: 600px;
 }
