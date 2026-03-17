@@ -1,87 +1,48 @@
-import { findProductById } from "./productData.mjs";
-import { setLocalStorage, getLocalStorage } from "./utils.mjs";
-
-let product = {};
-
-export default async function productDetails(productId) {
-  if (!productId) {
-    console.error("No product ID provided to productDetails");
-    return;
+import { getLocalStorage, setLocalStorage } from "./utils.mjs";
+export default class ProductDetails {
+  constructor(productId, dataSource) {
+    this.productId = productId;
+    this.dataSource = dataSource;
+    this.product = {};
   }
 
-  try {
-    product = await findProductById(productId);
-  } catch (error) {
-    console.error("Error fetching product details:", error);
-    return;
+  async init() {
+    const product = await this.dataSource.findProductById(this.productId);
+    console.log(product);
+    this.renderProductDetails(product);
+
+    document
+      .getElementById("addToCart")
+      .addEventListener("click", this.addToCart(product));
   }
 
-  renderProductDetails();
-
-// Use a single, consistent id. Update HTML to match this id if needed.
-  const btn = document.getElementById("addToCartBtn");
-  if (!btn) {
-    console.error("Add to Cart button not found (expected id='addToCartBtn')");
-    return;
+  addToCart(product) {
+    const productList = getLocalStorage("so-cart") || [];
+    productList.push(product);
+    setLocalStorage("so-cart", productList);
   }
-  btn.addEventListener("click", addToCart);
-}
 
+  renderProductDetails(product) {
+    const detailsElement = document.querySelector(".product-detail");
+    detailsElement.innerHTML = `
+        <h3>${product.Brand.Name}</h3>
+        <h2 class="divider">${product.NameWithoutBrand}</h2>
+        <img
+          class="divider"
+          src="${product.Image}"
+          alt="${product.Name}"
+        />
+        <p class="product-card__price">${product.ListPrice}</p>
 
+        <p class="product__color">${product.Colors[0].ColorName}</p>
 
+        <p class="product__description">
+          ${product.DescriptionHtmlSimple}
+        </p>
 
-function addToCart() {
-  const cartContents = getLocalStorage("so-cart") || [];
-
-  const normalized = normalizeProductForCart(product);
-
-  cartContents.push(normalized);
-  setLocalStorage("so-cart", cartContents);
-
-  animateCartIcon();
-  console.log("Product added to cart:", normalized);
-}
-
-function normalizeProductForCart(p) {
-  return {
-    Id: p.Id ?? "",
-    Name: p.Name ?? p.NameWithoutBrand ?? "Unknown",
-    FinalPrice: Number(p.FinalPrice ?? p.Price ?? 0),
-    Images: p.Images ?? (p.Image ? { PrimaryMedium: p.Image.PrimaryLarge } : {}),
-    Colors: p.Colors ?? (p.ColorsList ? p.ColorsList : []),
-    DescriptionHtmlSimple: p.DescriptionHtmlSimple ?? "",
-  };
-}
-
-function animateCartIcon() {
-  const icon = document.querySelector("#cart-icon");
-  if (!icon) return;
-  icon.classList.add("animate");
-  icon.addEventListener(
-    "animationend",
-    () => icon.classList.remove("animate"),
-    { once: true }
-  );
-}
-
-function renderProductDetails() {
-  const brandName = product.Brand?.Name ?? "";
-  const nameWithoutBrand = product.NameWithoutBrand ?? product.Name ?? "";
-  const imageSrc = product.Image?.PrimaryLarge ?? product.Images?.PrimaryMedium ?? "";
-  const altText = product.Name ?? "";
-  const price = product.FinalPrice ?? product.Price ?? 0;
-  const colorName = product.Colors?.[0]?.ColorName ?? "";
-
-  const el = (selector) => document.querySelector(selector);
-
-  if (el("#productName")) el("#productName").innerText = brandName;
-  if (el("#productNameWithoutBrand")) el("#productNameWithoutBrand").innerText = nameWithoutBrand;
-  if (el("#productImage")) {
-    el("#productImage").src = imageSrc;
-    el("#productImage").alt = altText;
+        <div class="product-detail__add">
+          <button id="addToCart" data-id="${product.Id}">Add to Cart</button>
+        </div>
+    `;
   }
-  if (el("#productFinalPrice")) el("#productFinalPrice").innerText = `$${Number(price).toFixed(2)}`;
-  if (el("#productColorName")) el("#productColorName").innerText = colorName;
-  if (el("#productDescriptionHtmlSimple")) el("#productDescriptionHtmlSimple").innerHTML = product.DescriptionHtmlSimple ?? "";
-  if (el("#addToCartBtn")) el("#addToCartBtn").dataset.id = product.Id ?? "";
 }

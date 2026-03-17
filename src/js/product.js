@@ -1,29 +1,12 @@
-import { getParam, getLocalStorage, setLocalStorage, qs, setClick} from "./utils.mjs";
-import { loadHeaderFooter } from "./utils.mjs";
+import { getParams } from "./utils.mjs";
+import ProductData from "./ProductData.mjs";
+import ProductDetails from "./productDetails.mjs";
 
-loadHeaderFooter();
+const dataSource = new ProductData("tents");
 
-const productId = getParam('id');
-console.log('productId from URL:', productId);
+const productId = getParams("product");
+// console.log(productId);
+console.log(dataSource.findProductById(productId));
 
-if (!productId) {
-  console.error('No productId found in URL');
-} else {
-  // load products (example: from localStorage or fetch)
-  const products = getLocalStorage('products') || []; // or fetch('/api/products')
-  // compare as string and number to be safe
-  const product = products.find(p => String(p.id) === String(productId));
-
-  if (!product) {
-    console.error('Product not found for id:', productId);
-  } else {
-    // render product details...
-    // wire up add to cart
-    setClick('#addToCartBtn', () => {
-      const cart = getLocalStorage('cart') || [];
-      cart.push({ id: product.id, title: product.title, price: product.price });
-      setLocalStorage('cart', cart);
-      console.log('Added to cart:', product.id);
-    });
-  }
-}
+const product = new ProductDetails(productId, dataSource);
+product.init();

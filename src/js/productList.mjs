@@ -1,25 +1,55 @@
-import { getData } from "./productData.mjs";
 import { renderListWithTemplate } from "./utils.mjs";
- 
+
 function productCardTemplate(product) {
-  return `<li class="product-card">
-    <a href="product_pages/index.html?product=${product.Id}">
-    <img
-      src="${product.Image.PrimaryMedium}"
-      alt="Image of ${product.Name}"
-    />
-    <h3 class="card__brand">${product.Brand.Name}</h3>
-    <h2 class="card__name">${product.NameWithoutBrand}</h2>
-    <p class="product-card__price">$${product.FinalPrice}</p></a>
-  </li>`;
+  return `
+    <li class="product-card">
+      <a href="product_pages/?product=${product.Id}">
+        <img
+          src="${product.Image}"
+          alt="${product.Name}"
+        />
+        <h3 class="card__brand">${product.Brand.Name}</h3>
+        <h2 class="card__name">${product.Name}</h2>
+        <p class="product-card__price">$${product.FinalPrice}</p>
+        </a>
+    </li>`;
 }
 
-export default async function productList(selector, category) {
-  // get the element we will insert the list into from the selector
-  const el = document.querySelector(selector);
-  // get the list of products
-  const products = await getData(category);
-  console.log(products);
-  // render out the product list to the element
-  renderListWithTemplate(productCardTemplate, el, products);
+export default class ProductListing {
+  constructor(category, dataSource, listElement) {
+    this.products = [];
+    this.category = category;
+    this.dataSource = dataSource;
+    this.listElement = listElement;
+  }
+
+  // Stretch Activity Week 2 #2
+  // Filter the products that are available
+  filterProducts(list) {
+    return list.filter((product) => product.Available === true);
+  }
+
+  // Before Stretch Activity Week 2
+  // Render the product listing
+  // renderList(list) {
+  //   const info = list.map((product) => productCardTemplate(product)).join("");
+  //   this.listElement.innerHTML = info;
+  // }
+
+  // After Stretch Activity Week 2
+  // Render the product listing
+  renderList(list) {
+    renderListWithTemplate(productCardTemplate, this.listElement, list);
+  }
+
+  // Initialize the product listing and fetch the data
+  async init() {
+    const list = await this.dataSource.getData();
+    // console.log(list);
+    // Filter the list
+    const filteredList = this.filterProducts(list);
+    // console.log(filteredList);
+    // Render the filtered list
+    this.renderList(filteredList);
+  }
 }
