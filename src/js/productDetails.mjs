@@ -1,48 +1,102 @@
 import { getLocalStorage, setLocalStorage } from "./utils.mjs";
-export default class ProductDetails {
-  constructor(productId, dataSource) {
-    this.productId = productId;
-    this.dataSource = dataSource;
-    this.product = {};
+
+const cartItems = getLocalStorage("so-cart") || [];
+
+function renderCartContents() {
+
+  // If there are no items, we can stop here or show a message
+  if (cartItems.length === 0) {
+    document.querySelector(".product-list").innerHTML =
+      "<p>Your cart is empty.</p>";
+    cartSubtotal(cartItems);
+    return;
   }
+  // If there are items, we can render them
+  const htmlItems = cartItems.map((item) => cartItemTemplate(item));
+  document.querySelector(".product-list").innerHTML = htmlItems.join("");
 
-  async init() {
-    const product = await this.dataSource.findProductById(this.productId);
-    console.log(product);
-    this.renderProductDetails(product);
+  // Set the total price of the cart
+  cartSubtotal(cartItems);
 
-    document
-      .getElementById("addToCart")
-      .addEventListener("click", this.addToCart(product));
+  // console.log(cartItems);
+  addRemoveButtonEventListeners();
+}
+
+function addRemoveButtonEventListeners() {
+  const removeButtons = document.querySelectorAll(".cart-card__remove");
+  removeButtons.forEach((button) => {
+    button.addEventListener("click", removeCartItem);
+  });
+}
+
+function removeCartItem(event) {
+  const itemId = event.target.getAttribute("data-id");
+  const cartItems = getLocalStorage("so-cart");
+
+  const cartItemRemoved = cartItems.filter((item) => item.Id !== itemId);
+  setLocalStorage("so-cart", cartItemRemoved);
+
+  renderCartContents();
+}
+
+function cartItemTemplate(item) {
+  const newItem = `<li class="cart-card divider">
+  <a href="#" class="cart-card__image">
+    <img
+      src="${item.Image}"
+      alt="${item.Name}"
+    />
+  </a>
+  <a href="#">
+    <h2 class="card__name">${item.Name}</h2>
+  </a>
+  <p class="cart-card__color">${item.Colors[0].ColorName}</p>
+  <p class="cart-card__quantity">qty: 1</p>
+  <p class="cart-card__price">$${item.FinalPrice}</p>
+  <button class="cart-card__remove" data-id="${item.Id}">X</button>
+</li>`;
+
+  return newItem;
+}
+
+function cartSubtotal(items) {
+  const cartCard = document.querySelector(".cart-card__subtotal");
+  // console.log(items);
+  if (items.length <= 0) {
+    cartCard.classList.add("hide"); // Hide the cart subtotal
+  } else {
+    cartCard.classList.remove("hide"); // Show the cart subtotal
+
+    const subtotal = items.reduce((acc, item) => acc + item.FinalPrice, 0);
+    // console.log({ items, subtotal });
+    const cartCount = items.length;
+    // cart count
+    if (cartCount > 1) {
+      document.querySelector(".cart-count").textContent = `${cartCount} items`;
+    } else {
+      document.querySelector(".cart-count").textContent = `${cartCount} item`;
+    }
+
+    // cart subtotal
+    document.querySelector(".cart-subtotal").textContent = ` $${subtotal}`;
   }
+}
 
-  addToCart(product) {
-    const productList = getLocalStorage("so-cart") || [];
-    productList.push(product);
-    setLocalStorage("so-cart", productList);
+renderCartContents();
+
+const cartNumber = cartItems.length;
+
+//add superscript to cart icon
+function cartSuperscript() {
+  const cartCountElement = document.querySelector(".cart .cart-superscript");
+  //hide superscript if no items in cart from hide css class
+  if (items.length === 0) {
+    cartCountElement.classList.add("hide");
+  } else {
+    cartCountElement.classList.remove("hide");
   }
-
-  renderProductDetails(product) {
-    const detailsElement = document.querySelector(".product-detail");
-    detailsElement.innerHTML = `
-        <h3>${product.Brand.Name}</h3>
-        <h2 class="divider">${product.NameWithoutBrand}</h2>
-        <img
-          class="divider"
-          src="${product.Image}"
-          alt="${product.Name}"
-        />
-        <p class="product-card__price">${product.ListPrice}</p>
-
-        <p class="product__color">${product.Colors[0].ColorName}</p>
-
-        <p class="product__description">
-          ${product.DescriptionHtmlSimple}
-        </p>
-
-        <div class="product-detail__add">
-          <button id="addToCart" data-id="${product.Id}">Add to Cart</button>
-        </div>
-    `;
+  //if items in cart display number from item length
+  if (cartNumber > 0) {
+    cartCountElement.textContent = cartCount;
   }
 }
