@@ -7,146 +7,62 @@ export function qs(selector, parent = document) {
 
 // retrieve data from localstorage
 export function getLocalStorage(key) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    console.error("getLocalStorage parse error for key:", key, e);
-    return null;
-  }
+  return JSON.parse(localStorage.getItem(key));
 }
-
-// save data to local storage (defensive)
+// save data to local storage
 export function setLocalStorage(key, data) {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (e) {
-    console.error("setLocalStorage error for key:", key, e);
-  }
+  localStorage.setItem(key, JSON.stringify(data));
 }
-
-// set a listener for both touchend and click (defensive)
+// set a listener for both touchend and click
 export function setClick(selector, callback) {
-  const el = qs(selector);
-  if (!el) {
-    console.warn("setClick: element not found for selector:", selector);
-    return;
-  }
-
-  el.addEventListener("touchend", (event) => {
+  qs(selector).addEventListener("touchend", (event) => {
     event.preventDefault();
-    callback(event);
+    callback();
   });
-
-  el.addEventListener("click", callback);
+  qs(selector).addEventListener("click", callback);
 }
 
-// get URL parameter value
-export function getParam(param) {
+export function getParams(param) {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
-  return urlParams.get(param);
+  const product = urlParams.get(param);
+  return product;
 }
 
-// Render a list (array) using a template function into a parent element
+// Stretch Activity Week 2
 export function renderListWithTemplate(
   templateFn,
   parentElement,
-  list = [],
+  list,
   position = "afterbegin",
-  clear = true
+  clear = false,
 ) {
-  if (!parentElement) {
-    console.error("renderListWithTemplate: parentElement is null");
-    return;
-  }
-
-  if (!Array.isArray(list)) {
-    list = [];
-  }
-
+  // Clear the parent element if needed
   if (clear) {
     parentElement.innerHTML = "";
   }
-
-  const htmlString = list.map(templateFn);
-  parentElement.insertAdjacentHTML(position, htmlString.join(""));
+  const htmlStrings = list.map(templateFn);
+  parentElement.insertAdjacentHTML(position, htmlStrings.join(""));
 }
 
-// Render an array of data with a template function
-export async function renderWithTemplate(
-  templateFn,
-  parentElement,
-  data = [],
-  position = "afterbegin",
-  clear = true,
-  callback = null
-) {
-  if (!parentElement) {
-    console.error("renderWithTemplate: parentElement is null");
-    return;
-  }
-
-  if (!Array.isArray(data)) {
-    data = [];
-  }
-  if (clear) {
-    parentElement.innerHTML = "";
-  }
-
-  const htmlString = data.map(templateFn);
-  parentElement.insertAdjacentHTML(position, htmlString.join(""));
-
-  if (typeof callback === "function") {
+export function renderWithTemplate(templateFn, parentElement, data, callback) {
+  parentElement.insertAdjacentHTML("afterbegin", templateFn);
+  if (callback) {
     callback(data);
   }
 }
 
-// loadTemplate returns an async function that fetches the HTML string when called
-function loadTemplate(path) {
-  return async function () {
-    try {
-      const res = await fetch(path);
-      if (res.ok) {
-        const html = await res.text();
-        return html;
-      } else {
-        console.error("loadTemplate: failed to fetch", path, res.status);
-        return "";
-      }
-    } catch (e) {
-      console.error("loadTemplate fetch error for", path, e);
-      return "";
-    }
-  };
+async function loadTemplate(path) {
+  const html = await fetch(path).then((res) => res.text());
+  return html;
 }
 
-// Load header and footer HTML and insert them into the page.
 export async function loadHeaderFooter() {
-  const headerTemplateFn = loadTemplate("/partials/header.html");
-  const footerTemplateFn = loadTemplate("/partials/footer.html");
-  const headerEl = document.querySelector("#main-header");
-  const footerEl = document.querySelector("#main-footer");
+  const headerTemplate = await loadTemplate("/partials/header.html");
+  const footerTemplate = await loadTemplate("/partials/footer.html");
 
-  if (headerEl) {
-    try {
-      const headerHtml = await headerTemplateFn();
-      headerEl.innerHTML = headerHtml;
-    } catch (e) {
-      console.error("Error loading header template:", e);
-    }
-  } else {
-    console.warn("loadHeaderFooter: #main-header not found");
-  }
-
-  if (footerEl) {
-    try {
-      const footerHtml = await footerTemplateFn();
-      footerEl.innerHTML = footerHtml;
-    } catch (e) {
-      console.error("Error loading footer template:", e);
-    }
-  } else {
-    console.warn("loadHeaderFooter: #main-footer not found");
-  }
+  const header = document.querySelector("#header");
+  const footer = document.querySelector("#footer");
+  renderWithTemplate(headerTemplate, header);
+  renderWithTemplate(footerTemplate, footer);
 }
