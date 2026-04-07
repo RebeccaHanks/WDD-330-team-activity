@@ -18,7 +18,14 @@ function addToCart() {
     cartContents = [];
   }
   // then add the current product to the list
-  cartContents.push(product);
+  const existingItem = cartContents.find(item => item.Id === product.Id);
+
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    product.quantity = 1;
+    cartContents.push(product);
+}
   setLocalStorage("so-cart", cartContents);
 }
 function renderProductDetails() {
@@ -34,3 +41,4 @@ function renderProductDetails() {
     product.DescriptionHtmlSimple;
   document.querySelector("#addToCart").dataset.id = product.Id;
 }
+
