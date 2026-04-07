@@ -2,9 +2,18 @@ import { resolve } from "path";
 
 import { defineConfig } from "vite";
  
+import dns from "dns";
+import ProductListing from "./src/js/ProductList.mjs";
+
 export default defineConfig({
 
   root: "src/",
+
+  server: {
+    host: "localhost",
+    port: 3000,
+    open: true,
+  },
  
   build: {
 
@@ -22,7 +31,13 @@ export default defineConfig({
 
         product: resolve(__dirname, "src/product_pages/index.html"),
 
+        ProductListing: resolve(__dirname, "src/product-listing/index.html"),
+
         product_list: resolve(__dirname, "src/product-list/index.html"),
+
+        login: resolve(__dirname, "src/login/index.html"),
+
+        orders: resolve(__dirname, "src/orders/index.html"),
 
       },
 

@@ -21,66 +21,48 @@ export function setClick(selector, callback) {
   });
   qs(selector).addEventListener("click", callback);
 }
-// get URL parameter value
 
-export function getParam(param) {
+export function getParams(param) {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
-  return urlParams.get(param);
+  const product = urlParams.get(param);
+  return product;
 }
 
-
+// Stretch Activity Week 2
 export function renderListWithTemplate(
   templateFn,
   parentElement,
   list,
   position = "afterbegin",
-  clear = true
+  clear = false,
 ) {
+  // Clear the parent element if needed
   if (clear) {
     parentElement.innerHTML = "";
   }
-  const htmlString = list.map(templateFn);
-  parentElement.insertAdjacentHTML(position, htmlString.join(""));
+  const htmlStrings = list.map(templateFn);
+  parentElement.insertAdjacentHTML(position, htmlStrings.join(""));
 }
 
-export async function renderWithTemplate(
-  templateFn,
-  parentElement,
-  data,
-  position = "afterbegin",
-  clear = true
-) {
-  if (clear) {
-    parentElement.innerHTML = "";
-  }
-  const htmlString = data.map(templateFn);
-  parentElement.insertAdjacentHTML(position, htmlString.join(""));
-  
-  if(callback) {
-        callback(data);
+export function renderWithTemplate(templateFn, parentElement, data, callback) {
+  parentElement.insertAdjacentHTML("afterbegin", templateFn);
+  if (callback) {
+    callback(data);
   }
 }
 
-function loadTemplate(path) {
-  return async function () {
-    const res = await fetch(path);
-  if (res.ok) {
-      const html = await res.text();
-      return html;
-    }
-  };
+async function loadTemplate(path) {
+  const html = await fetch(path).then((res) => res.text());
+  return html;
 }
 
 export async function loadHeaderFooter() {
-  // header template will still be a function! But one where we have pre-supplied the argument.
-  // headerTemplate and footerTemplate will be almost identical, but they will remember the path we passed in when we created them
-  // why is it important that they stay functions?  The renderWithTemplate function is expecting a template function...if we sent it a string it would break, if we changed it to expect a string then it would become less flexible.
-  const headerTemplateFn = loadTemplate("/partials/header.html");
-  const footerTemplateFn = loadTemplate("/partials/footer.html");
-  const headerEl = document.querySelector("#main-header");
-  const footerEl = document.querySelector("#main-footer");
-  renderWithTemplate(headerTemplateFn, headerEl);
-  renderWithTemplate(footerTemplateFn, footerEl);
-}
+  const headerTemplate = await loadTemplate("/partials/header.html");
+  const footerTemplate = await loadTemplate("/partials/footer.html");
 
+  const header = document.querySelector("#header");
+  const footer = document.querySelector("#footer");
+  renderWithTemplate(headerTemplate, header);
+  renderWithTemplate(footerTemplate, footer);
+}
